@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.burro.dao.IMenuPowerDao" >
+	
+	<!-- 查询列表条数-->
+	<select id="count" resultType="long" parameterType="com.burro.entity.MenuPowerEntity" >
+		SELECT count(*)
+		FROM m_menu_power m 
+		LEFT JOIN m_menu mm ON mm.menu_id = m.menu_id and mm.del_flag='0'
+		LEFT JOIN m_role mr ON mr.role_id = m.power_id and mr.del_flag='0'
+		WHERE m.del_flag = '0'
+		<if test="menuKeyword != null and menuKeyword != ''" >
+			AND mm.menu_name like CONCAT('%',#{menuKeyword,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="powerId != null and powerId != ''" >
+			AND mr.role_name like CONCAT('%',#{powerId,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="menuPid != null and menuPid != '' and menuPid != '000'" >
+			AND mm.menu_pid = #{menuPid,jdbcType=VARCHAR}
+		</if>
+		<if test="menuId != null and menuId != '' and menuId != '000'" >
+			AND mm.menu_id = #{menuId,jdbcType=VARCHAR}
+		</if>
+		<if test="powerType != null and powerType != '' and powerType != '000'" >
+			AND m.power_type like CONCAT('%',#{powerType,jdbcType=VARCHAR},'%' )
+		</if>
+	</select>
+	
+	<!-- 查询列表数据-->
+	<select id="list" resultType="com.burro.entity.MenuPowerEntity" parameterType="com.burro.entity.MenuPowerEntity" >
+		SELECT 
+			m.id, 
+			m.power_type,
+			(	
+				CASE 
+					WHEN m.power_type = '00' 
+					THEN IFNULL((select mr.role_name from m_role mr where m.power_id = mr.role_id and mr.del_flag = '0'),m.power_id)
+					ELSE IFNULL((select mu.user_name from m_user mu where m.power_id = mu.user_id and mu.del_flag = '0'),m.power_id)
+				END 
+			)AS powerId,		
+			mm.menu_name,
+			m.menu_id, 
+			m.remark,
+			IFNULL((select mu.user_name from m_user mu where m.create_by = mu.user_id and mu.del_flag = '0'),m.create_by) as createBy,
+			DATE_FORMAT(m.create_date,'%Y-%m-%d %H:%i:%S') AS create_date,
+			IFNULL((select mu.user_name from m_user mu where m.update_by = mu.user_id and mu.del_flag = '0'),m.update_by) as updateBy,
+			DATE_FORMAT(m.update_date,'%Y-%m-%d %H:%i:%S') AS update_date
+		FROM
+			m_menu_power m 	 	
+		LEFT JOIN m_menu mm 
+			ON mm.menu_id = m.menu_id and mm.del_flag='0'
+		LEFT JOIN m_role mr 
+			ON mr.role_id = m.power_id and mr.del_flag='0'
+		WHERE m.del_flag = '0'
+		<if test="menuKeyword != null and menuKeyword != ''" >
+			AND mm.menu_name like CONCAT('%',#{menuKeyword,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="powerId != null and powerId != ''" >
+			and mr.role_name like CONCAT('%',#{powerId,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="menuPid != null and menuPid != '' and menuPid != '000'" >
+			and mm.menu_pid = #{menuPid,jdbcType=VARCHAR}
+		</if>
+		<if test="menuId != null and menuId != '' and menuId != '000'" >
+			and mm.menu_id = #{menuId,jdbcType=VARCHAR}
+		</if>
+		<if test="powerType != null and powerType != '' and powerType != '000'" >
+			and m.power_type like CONCAT('%',#{powerType,jdbcType=VARCHAR},'%' )
+		</if>	
+		order by menu_id
+		limit #{start},#{rows}
+	</select>
+	
+	<delete id="deleteByRoleIdChange" parameterType="java.lang.String">
+		UPDATE 
+			m_menu_power 
+		SET 
+			del_flag='1',
+			update_by=#{updateBy,jdbcType=VARCHAR},
+			update_date=now() 
+		WHERE 
+			power_type='02'
+		AND	
+			power_id=#{roleId,jdbcType=VARCHAR} 
+		AND
+			del_flag='0'
+	</delete>
+	
+	<delete id="deleteByRoleId" parameterType="java.lang.String">
+		UPDATE 
+			m_menu_power 
+		SET 
+			del_flag='1',
+			update_by=#{updateBy,jdbcType=VARCHAR},
+			update_date=now() 
+		WHERE 
+			power_id=#{roleId,jdbcType=VARCHAR} 
+		AND del_flag='0'
+	</delete>
+	
+	<insert id="insertByRoleId">
+		INSERT INTO m_menu_power( 
+			id,power_type,power_id,menu_id,
+			create_by,create_date,update_by,update_date,del_flag )
+		VALUES
+		<foreach item="menuId" collection="menuIds" separator=",">		 
+			(
+				REPLACE(UUID(),'-',''), #{powerType}, #{roleId}, #{menuId},
+				#{createBy,jdbcType=VARCHAR}, now(), #{createBy,jdbcType=VARCHAR}, now(), '0'
+			)
+		</foreach>
+	</insert>
+	
+</mapper>

@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.burro.dao.IUserDao" >
+
+	<!--通过用户的账号 删除用户菜单权限的个人权限以及角色减权限  -->
+	<delete id="deleteUserPower" parameterType="java.lang.String" >
+		UPDATE m_menu_power 
+		SET del_flag = '1',
+			update_date = now(),
+			update_by = #{updateBy,jdbcType=VARCHAR}
+		WHERE del_flag='0' 
+		AND power_id = #{userId,jdbcType=VARCHAR}
+	</delete>
+	
+	<!--通过用户的账号 删除用户功能权限的个人权限以及角色减权限  -->
+	<delete id="deleteFuncPower" parameterType="java.lang.String" >
+		UPDATE m_func_power 
+		SET del_flag = '1',
+			update_date = now(),
+			update_by = #{updateBy,jdbcType=VARCHAR}
+		WHERE del_flag='0' 
+		AND power_id = #{userId,jdbcType=VARCHAR}
+	</delete>
+	
+	<!--通过主键删除用户-->
+	<delete id="deleteById" parameterType="java.lang.String" >
+		UPDATE m_user 
+		SET del_flag='1',
+			update_by=#{updateBy,jdbcType=VARCHAR},
+			update_date=now() 
+		WHERE id=#{id,jdbcType=VARCHAR} 
+		AND del_flag='0'
+	</delete>
+	<!-- 查询用户明细-->
+	<select id="list" resultType="com.burro.entity.UserEntity" parameterType="com.burro.entity.UserEntity" >
+		SELECT
+			mu.id,
+			mu.user_id,
+			mu.user_name,
+			mu.user_password,
+			mu.user_role_id,
+			mr.role_name,
+			mu.user_city_id,
+			tc.city_name,
+			mu.user_phone,
+			mu.remark,
+			mu1.user_name as update_by,
+			DATE_FORMAT(mu.update_date,'%Y-%m-%d %H:%i:%S') AS update_date
+		FROM
+			m_user mu
+		LEFT JOIN m_role mr ON mu.user_role_id = mr.role_id and mr.del_flag = '0'
+		LEFT JOIN t_city tc ON mu.user_city_id = tc.city_id and tc.del_flag = '0' and tc.city_level in(1,6)
+		LEFT JOIN m_user mu1 ON mu.update_by = mu1.user_id and mu1.del_flag ='0'
+		WHERE mu.del_flag = '0'
+		<if test="userId != null and userId != ''" >
+			AND mu.user_id like CONCAT('%',#{userId,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="userName != null and userName != ''" >
+			AND mu.user_name like CONCAT('%',#{userName,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="userRoleId != null and userRoleId != '000'" >
+			AND mu.user_role_id = #{userRoleId,jdbcType=VARCHAR}
+		</if>
+		<if test="userCityId != null and userCityId != '000'" >
+			AND mu.user_city_id = #{userCityId,jdbcType=VARCHAR}
+		</if>
+		<if test="userPhone != null and userPhone != ''" >
+			AND mu.user_phone like CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="sort != null and sort != ''" >
+			order by ${sort} ${order} 
+		</if>
+		order by update_date desc
+		limit #{start},#{rows} 
+	</select>
+	
+	<!--按条件统计查询-->
+	<select id="count" resultType="long" parameterType="com.burro.entity.UserEntity" >
+		SELECT count(*)
+		FROM m_user mu
+		WHERE mu.del_flag = '0'
+		<if test="userId != null and userId != ''" >
+			AND mu.user_id like CONCAT('%',#{userId,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="userName != null and userName != ''" >
+			AND mu.user_name like CONCAT('%',#{userName,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="userRoleId != null and userRoleId != '000'" >
+			AND mu.user_role_id = #{userRoleId,jdbcType=VARCHAR}
+		</if>
+		<if test="userCityId != null and userCityId != '000'" >
+			AND mu.user_city_id = #{userCityId,jdbcType=VARCHAR}
+		</if>
+		<if test="userPhone != null and userPhone != ''" >
+			AND mu.user_phone like CONCAT('%',#{userPhone,jdbcType=VARCHAR},'%' )
+		</if>	
+		<if test="sort != null and sort != ''" >
+			order by #{sort} #{order} 
+		</if>
+	</select>
+	
+	<!--通过user_id获取用户信息-->
+	<select id ="getById" parameterType="string" resultType="com.burro.entity.UserEntity">
+		SELECT
+			mu.id,
+			mu.user_id,
+			mu.user_name,
+			mu.user_password,
+			mu.user_role_id,
+			mr.role_name,
+			mu.user_city_id,
+			tc.city_name,
+			mu.user_phone,
+			mu.remark,
+			mu1.user_name as update_by,
+			DATE_FORMAT(mu.update_date,'%Y-%m-%d %H:%i:%S') AS update_date
+		FROM m_user mu
+		LEFT JOIN m_role mr ON mu.user_role_id = mr.role_id and mr.del_flag='0'
+		LEFT JOIN t_city tc ON mu.user_city_id = tc.city_id and tc.del_flag = '0' and tc.city_level in(1,6)
+		LEFT JOIN m_user mu1 ON mu.update_by = mu1.user_id and mu1.del_flag = '0'
+		WHERE mu.del_flag = '0'
+		AND mu.id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<!--查询账号是否存在-->
+	<select id="checkByUserId" resultType="int" parameterType="com.burro.entity.UserEntity">
+		SELECT count(*)
+		FROM m_user mu
+		WHERE mu.del_flag = '0' 
+		AND mu.user_id =#{userId,jdbcType=VARCHAR}
+	</select>
+	
+	<!--新增用户-->
+	<insert id ="insert" parameterType="com.burro.entity.UserEntity">
+		INSERT INTO m_user (
+			id,
+			user_id,
+			user_name,
+			user_password,
+			user_role_id,
+			user_city_id,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		)VALUES(
+			REPLACE(UUID(),'-',''),
+			#{userId,jdbcType=VARCHAR},
+			#{userName,jdbcType=VARCHAR},
+			#{userPassword,jdbcType=VARCHAR},
+			#{userRoleId,jdbcType=VARCHAR},
+			#{userCityId,jdbcType=VARCHAR},
+			#{remark,jdbcType=VARCHAR},
+			#{createBy,jdbcType=VARCHAR},
+			now(),
+			#{updateBy,jdbcType=VARCHAR}, 
+			now(), 
+			'0'
+		)
+	
+	</insert>
+
+	<!--更新用户-->
+	<update id="update" parameterType="com.burro.entity.UserEntity">
+		UPDATE m_user 
+		<set> 
+			<if test="userId != null and userId != ''" >
+				 user_id = #{userId,jdbcType=VARCHAR},
+			</if>
+			<if test="userName != null and userName != ''" >
+				user_name = #{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="userRoleId != null and userRoleId != ''" >
+				user_role_id = #{userRoleId,jdbcType=VARCHAR},
+			</if>
+			<if test="userCityId != null and userCityId != '' and userCityId != '000' " >
+				user_city_id = #{userCityId,jdbcType=VARCHAR},
+			</if>
+			<if test="userPhone != null and userPhone != ''" >
+				user_phone = #{userPhone,jdbcType=VARCHAR},
+			</if>	
+			<if test="remark != null and remark != ''" >
+				remark = #{remark,jdbcType=VARCHAR},
+			</if> 
+			update_by = #{updateBy,jdbcType=VARCHAR},
+			update_date = now()
+		</set>
+		WHERE id=#{id,jdbcType=VARCHAR}
+		AND del_flag='0'
+	</update>
+	
+	<!--获取选中用户的角色权限的子节点和父节点 -->
+	<select id="listRolePower" parameterType="java.lang.String" resultType="com.burro.entity.common.TreeNode">
+		SELECT
+			mm.menu_id as id, 
+			mm.menu_pid as p_id
+		FROM m_menu_power mmp
+		LEFT JOIN m_menu mm ON mm.menu_id = mmp.menu_id AND mm.del_flag = '0'
+		WHERE mmp.del_flag = '0'
+		AND mmp.power_type='00'
+		AND (mmp.power_id = #{editUserRoleId} OR mmp.power_id =#{editUserId})
+		AND mm.menu_id IS NOT NULL
+		UNION
+		SELECT 
+			mfp.func_id AS id,
+			mfp.menu_id AS p_id
+		FROM m_func_power mfp 
+		LEFT JOIN m_menu_func mmf ON mfp.func_id = mmf.func_id AND mmf.menu_id = mfp.menu_id AND mmf.del_flag = '0'
+		LEFT JOIN m_base_func mbf ON mfp.func_id = mbf.func_id AND mbf.del_flag = '0'
+		WHERE mfp.del_flag = '0'
+		AND mfp.power_type='00'
+		AND ( mfp.power_id = #{editUserRoleId} OR mfp.power_id =#{editUserId} )
+		AND mmf.func_id IS NOT NULL
+	</select>
+	
+	<!--获取选中用户的所有权限的子节点和父节点 -->
+	<select id="listChecked" parameterType="java.lang.String" resultType="com.burro.entity.common.TreeNode">
+		SELECT 
+			mm.menu_id as id, 
+			mm.menu_pid as p_id
+		FROM m_menu_power mmp
+		LEFT JOIN m_menu mm ON mm.menu_id = mmp.menu_id AND mm.del_flag = '0'
+		WHERE mmp.del_flag = '0'
+		AND (mmp.power_id = #{editUserRoleId} OR mmp.power_id = #{editUserId})
+		AND mm.menu_id IS NOT NULL
+		UNION
+		SELECT 
+			mfp.func_id AS id,
+			mfp.menu_id AS p_id
+		FROM m_func_power mfp 
+		LEFT JOIN m_menu_func mmf ON mfp.func_id = mmf.func_id AND mmf.menu_id = mfp.menu_id AND mmf.del_flag = '0'
+		LEFT JOIN m_base_func mbf ON mfp.func_id = mbf.func_id AND mbf.del_flag = '0'
+		WHERE mfp.del_flag = '0'
+		AND ( mfp.power_id =#{editUserRoleId} OR mfp.power_id = #{editUserId} )
+		AND mmf.func_id IS NOT NULL
+	</select>
+	
+	<!--获取选中用户的角色权限中减权限(power_type=02)的子节点和父节点 -->
+	<select id="roleChecked" parameterType="java.lang.String" resultType="com.burro.entity.common.TreeNode">
+		SELECT 
+			mm.menu_id as id, 
+			mm.menu_pid as p_id
+		FROM m_menu_power mmp
+		LEFT JOIN m_menu mm ON mm.menu_id = mmp.menu_id AND mm.del_flag = '0'
+		WHERE mmp.del_flag = '0'
+ 		AND mmp.menu_id  in ( SELECT menu_id FROM m_menu_power m where m.del_flag='0' AND m.power_type='02' AND m.power_id = #{editUserId} )
+		AND (mmp.power_id = #{editUserRoleId} OR mmp.power_id = #{editUserId})
+		AND mm.menu_id IS NOT NULL
+		UNION
+		SELECT 
+			mfp.func_id AS id,
+			mfp.menu_id AS p_id
+		FROM m_func_power mfp 
+		LEFT JOIN m_menu_func mmf ON mfp.func_id = mmf.func_id AND mmf.menu_id = mfp.menu_id AND mmf.del_flag = '0'
+		LEFT JOIN m_base_func mbf ON mfp.func_id = mbf.func_id AND mbf.del_flag = '0'
+		WHERE mfp.del_flag = '0'
+		AND mfp.func_id  in ( SELECT func_id FROM m_func_power m where m.del_flag='0' AND m.power_type='02' AND m.power_id = #{editUserId} AND m.menu_id = mfp.menu_id )
+		AND ( mfp.power_id =#{editUserRoleId} OR mfp.power_id = #{editUserId} )
+		AND mmf.func_id IS NOT NULL
+	</select>
+	
+	<!--增减权限按钮：在当前用户所能操作的菜单 功能列表   查询指定用户是否含有菜单或功能权限 (默认为false)，以及指定用户权限是否为角色权限(默认为false) -->
+	<select id="listUserPowerByUserIdChange" parameterType="java.lang.String" resultType="com.burro.entity.common.TreeNode">
+		<!--当前登录用户菜单权限查询-->
+		(SELECT 
+			<!-- 指定用户是否为角色菜单权限,默认为false -->
+			'false' AS roleFlag,
+			mm.menu_id as id, 
+			mm.menu_pid as p_id, 
+			mm.menu_name as name, 
+			if(mm.menu_level!='1','true','false') AS 'open', 
+			mm.menu_level AS 'level',
+			<!--指定用户菜单权限是否被选中,默认为false  -->
+			'false' AS checked
+		FROM m_menu_power mmp
+		LEFT JOIN m_menu mm ON mm.menu_id = mmp.menu_id AND mm.del_flag = '0'
+		WHERE mmp.del_flag = '0'
+		AND (mmp.power_id = #{currentUserRoleId} OR mmp.power_id = #{currentUserId})
+		AND mm.menu_id IS NOT NULL
+		ORDER BY mm.menu_sort
+		)
+		UNION
+		<!--当前登录用户功能权限查询	 -->
+		(SELECT 
+			<!-- 指定用户是否为角色功能,默认为false   -->
+			'false' AS roleFlag,
+			mfp.func_id AS id,
+			mfp.menu_id AS p_id,
+			mbf.func_name AS name,
+			'false' AS 'open',
+			'2' AS 'level',
+			<!--指定用户角色功能是否被选中,默认为false   -->
+			 'false' AS checked
+		FROM m_func_power mfp 
+		LEFT JOIN m_menu_func mmf ON mfp.func_id = mmf.func_id AND mmf.menu_id = mfp.menu_id AND mmf.del_flag = '0'
+		LEFT JOIN m_base_func mbf ON mfp.func_id = mbf.func_id AND mbf.del_flag = '0'
+		WHERE mfp.del_flag = '0'
+		AND ( mfp.power_id =#{currentUserRoleId} OR mfp.power_id = #{currentUserId} )
+		AND mmf.func_id IS NOT NULL)
+	</select>
+	
+</mapper>

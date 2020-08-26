@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.burro.dao.ICommonDao">
+
+	<update id="executeSql" parameterType="java.util.Map">
+		${sql}
+	</update>
+	
+	<select id="listSearchCityByUser" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM(
+			SELECT tc.city_id AS CODE, tc.city_name AS NAME FROM t_city tc 
+			WHERE  tc.del_flag='0' AND tc.city_level in(1,6) AND tc.open_flag='1'
+			UNION ALL 
+			SELECT '000' AS CODE, '所有' AS NAME FROM DUAL
+
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="listEditCityByUser" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM(
+			SELECT tc.city_id AS CODE, tc.city_name AS NAME FROM  t_city tc 
+			WHERE  tc.del_flag='0' AND tc.city_level in(1,6) 
+			AND tc.open_flag='1'
+			UNION ALL 
+			SELECT '000' AS CODE, '请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getSearchAllProvinceList" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM (
+			SELECT DISTINCT tc.district_id AS CODE, tc.city_name AS NAME FROM  t_city tc  where tc.city_level = 0
+			UNION ALL SELECT '100000' AS CODE, '全国' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	
+	<select id="getEditAllProvinceList" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM (
+			SELECT DISTINCT tc.district_id AS CODE, tc.city_name AS NAME FROM  t_city tc  where tc.city_level = 0
+			UNION ALL SELECT '100000' AS CODE, '全国' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+		
+	<select id="getSearchAllCityList" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM (
+			SELECT DISTINCT tc.city_id AS CODE, tc.city_name AS NAME FROM  t_city tc  where tc.city_level in(1,6)
+			UNION ALL SELECT '000' AS CODE, '所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	
+	<select id="getEditAllCityList" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM (
+			SELECT DISTINCT tc.city_id AS CODE, tc.city_name AS NAME FROM  t_city tc  where tc.city_level in(1,6)
+			UNION ALL SELECT '000' AS CODE, '请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	
+	<select id="getSearchAllOpenCityList" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM (
+			SELECT DISTINCT tc.city_id AS CODE, tc.city_name AS NAME FROM  t_city tc
+			WHERE tc.city_level IN(1,6) AND tc.open_flag = '1'
+			UNION ALL 
+			SELECT '000' AS CODE, '所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	
+	<select id="getEditAllOpenCityList" resultType="com.burro.entity.common.ComboBox" parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM (
+			SELECT DISTINCT tc.city_id AS CODE, tc.city_name AS NAME FROM  t_city tc  
+			WHERE tc.city_level IN(1,6) AND tc.open_flag = '1'
+			UNION ALL 
+			SELECT '000' AS CODE, '请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+
+	<select id="getSearchRoleList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM(
+			SELECT role_id AS CODE, role_name AS NAME FROM m_role 
+			WHERE del_flag='0'
+			UNION ALL SELECT '000' AS CODE, '所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getEditRoleList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM (
+			SELECT role_id AS CODE, role_name AS NAME FROM m_role
+			WHERE del_flag='0'
+			UNION ALL SELECT '000' AS CODE, '请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	
+	<!-- role_id LIKE 'J000%'  -->
+	<select id="getSearchCityRoleList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM (
+			SELECT role_id AS CODE, role_name AS NAME FROM m_role
+			WHERE role_id LIKE 'J000%' and del_flag='0'
+			UNION ALL 
+			SELECT '000' AS CODE, '所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<!-- role_id LIKE 'J000%'  -->
+	<select id="getEditCityRoleList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM (
+			SELECT role_id AS CODE, role_name AS NAME FROM m_role 
+			WHERE role_id LIKE 'J000%' AND del_flag='0'
+			UNION ALL 
+			SELECT '000' AS CODE, '请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getSearchDictByTypeCode" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM (
+			SELECT dict_id AS CODE,dict_name AS NAME FROM m_dict
+			WHERE del_flag = '0'
+			AND type_code = #{typeCode,jdbcType=VARCHAR}
+			UNION ALL
+			SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	
+	<!--通过url查询菜单-->
+	<select id="getMenuByUrl" resultType="com.burro.entity.MenuEntity" parameterType="java.lang.String" >
+		SELECT 
+			id,
+			menu_id, 
+			menu_name, 
+			menu_url, 
+			menu_level,
+			menu_pid, 
+			menu_sort, 
+			menu_icon
+		FROM m_menu
+		WHERE del_flag = '0'
+		AND menu_url = #{menuUrl,jdbcType=VARCHAR}
+	</select>
+	
+	<!--通过页面url地址查询权限信息-->
+	<select id="listFuncPowerByMenuId" resultType="com.burro.entity.FuncPowerEntity">
+		SELECT
+			mbf.func_type,
+			mbf.func_name AS func_id 
+		FROM
+			m_base_func  mbf
+		WHERE mbf.del_flag = '0'
+		<!--TODO 曹世达 研发管理员角色id 是否确定为 J108  -->
+		<if test="userRoleId != 'J108'">
+			AND mbf.func_id IN (
+				SELECT DISTINCT
+					mfp.func_id 
+				FROM 
+					m_func_power mfp 
+				LEFT JOIN m_menu_func mmf ON mmf.menu_id = mfp.menu_id  AND mmf.func_id = mfp.func_id
+				WHERE 
+					mfp.del_flag = '0' 
+				AND mmf.del_flag = '0'
+				AND ( mfp.power_id = #{userRoleId,jdbcType=VARCHAR} OR mfp.power_id = #{userId,jdbcType=VARCHAR} ) 
+				AND mfp.menu_id =#{menuId,jdbcType=VARCHAR}
+			)
+			AND mbf.func_id NOT IN (
+				SELECT 
+					func_id	
+				FROM	
+					m_func_power m	
+				where	
+					m.del_flag='0'
+				AND
+					m.power_type='02'
+				AND
+					m.power_id =  #{userId,jdbcType=VARCHAR}
+				AND 
+					m.menu_id =#{menuId,jdbcType=VARCHAR}
+				)
+		</if>	
+	</select>
+
+	<select id="getEditDictByTypeCode" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM (
+			SELECT dict_id AS CODE,dict_name AS NAME FROM m_dict
+			WHERE del_flag = '0'
+			AND type_code = #{typeCode,jdbcType=VARCHAR}
+			UNION ALL 
+			SELECT '000' AS CODE, '请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getSelectCityList" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT city_id AS CODE,city_name AS NAME FROM t_city WHERE
+		del_flag='0' and parent_city_id !='100000' and parent_city_id =
+		#{strProv,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getUserProv" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT t_city.city_id AS CODE,t_city.city_name AS NAME
+		FROM t_city inner join m_usercity on t_city.city_id = m_usercity.city_id
+		AND m_usercity.del_flag = '0'
+		WHERE parent_city_id = '100000'
+		and t_city.del_flag = '0'
+		and user_id = #{strLoginUserId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getUserCity" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT t_city.city_id AS CODE,t_city.city_name AS NAME
+		FROM t_city inner join m_usercity on t_city.city_id = m_usercity.city_id
+		AND m_usercity.del_flag = '0'
+		WHERE parent_city_id !='100000'
+		AND t_city.del_flag = '0'
+		and user_id = #{0}
+		and parent_city_id = #{1}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getCustomerService" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT user_id AS CODE,user_name AS NAME
+		FROM m_user
+		WHERE user_role_id = 'J003'
+		and IFNULL(user_city_id,'') in (${_parameter})
+		and del_flag='0'
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getDictListBySearch" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT dict_id AS CODE,dict_name AS NAME
+		FROM m_dict
+		WHERE del_flag = '0'
+		and type_code = #{strDictType,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getDictListByEdit" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT dict_id AS CODE,dict_name AS NAME
+		FROM m_dict
+		WHERE del_flag = '0'
+		and upper(type_code) = #{strDictType,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	
+	<select id="getDictListByCustomTranSearch" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT dict_id AS CODE,dict_name AS NAME
+		FROM m_dict
+		WHERE del_flag = '0'
+		and type_code = 'tradeType'
+		and dict_id in ('3101','3103','3104')
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getDictListByCustomTranEdit" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT dict_id AS CODE,dict_name AS NAME
+		FROM m_dict
+		WHERE del_flag = '0'
+		and type_code = 'tradeType'
+		and dict_id in ('3101','3103','3104')
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getSelectSiteList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,site_name AS NAME FROM m_site_info WHERE
+		del_flag='0'
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getEditSiteList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,site_name AS NAME FROM m_site_info WHERE
+		del_flag='0'
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getSelectAppList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,app_name AS NAME FROM m_app_info WHERE del_flag='0'
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getEditAppList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,app_name AS NAME FROM m_app_info WHERE del_flag='0'
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+
+	<select id="getAllCityList" resultType="java.lang.String"
+		parameterType="java.lang.String">
+		SELECT GROUP_CONCAT(CONCAT('''',b.city_id,'''')) as CODE FROM t_city b WHERE
+		b.del_flag='0'
+	</select>
+
+
+
+
+	<select id="getSearchSiteByCity" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,site_name AS NAME FROM m_site_info WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getEditSiteByCity" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,site_name AS NAME FROM m_site_info WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getSearchSiteByJoinId" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,site_name AS NAME FROM m_site_info WHERE
+		del_flag='0'
+		and join_id = #{strJoinId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getEditSiteByJoinId" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT id AS CODE,site_name AS NAME FROM m_site_info WHERE
+		del_flag='0'
+		and join_id = #{strJoinId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getSearchVIPLevelList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT vip_id AS CODE,name AS NAME FROM t_vip_info WHERE del_flag='0'
+		and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getEditVIPLevelList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT vip_id AS CODE,name AS NAME FROM t_vip_info WHERE del_flag='0'
+		and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getSearchDistrictByCity" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT district_id AS CODE,district_name AS NAME FROM t_city_district
+		WHERE del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getEditDistrictByCity" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT district_id AS CODE,district_name AS NAME FROM t_city_district
+		WHERE del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getSearchSpecialType" resultType="com.burro.entity.common.ComboBox">
+		SELECT '000' AS CODE, '所有' AS NAME FROM DUAL
+		UNION ALL
+		(SELECT type_id AS CODE, type_name AS NAME FROM t_special_type WHERE
+		del_flag='0' ORDER BY CODE)
+
+	</select>
+	<select id="getEditSpecialType" resultType="com.burro.entity.common.ComboBox">
+		SELECT '000' AS CODE, '请选择' AS NAME FROM DUAL
+		UNION ALL
+		(SELECT type_id AS CODE, type_name AS NAME FROM t_special_type WHERE
+		del_flag='0' ORDER BY CODE)
+	</select>
+
+	<select id="getSearchSpecialTypeByCity" resultType="com.burro.entity.common.ComboBox">
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		UNION ALL
+		(SELECT type_id AS CODE, type_name AS NAME FROM t_special_type WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR} ORDER BY
+		CODE)
+	</select>
+	<select id="getEditSpecialTypeByCity" resultType="com.burro.entity.common.ComboBox">
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		UNION ALL
+		(SELECT type_id AS CODE, type_name AS NAME FROM t_special_type WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR} ORDER BY
+		CODE)
+	</select>
+
+	<!-- 根据城市显示客户权限类型(不显示 普通用户 && 同城代码) -->
+	<select id="getEditSpecialTypeRebateByCity" resultType="com.burro.entity.common.ComboBox">
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		UNION ALL
+		(SELECT t.type_id AS CODE, t.type_name AS NAME FROM t_special_type t LEFT
+		JOIN m_dict md1 ON md1.dict_id = t.order_flag WHERE t.del_flag='0' and
+		NOT (t.order_flag= '2902' AND t.type_id= '00') and t.city_id =
+		#{strCityId,jdbcType=VARCHAR} ORDER BY CODE)
+	</select>
+
+	<select id="getSearchSpecialTypeByCityAndOrderFlag" resultType="com.burro.entity.common.ComboBox">
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		UNION ALL
+		(SELECT type_id AS CODE, type_name AS NAME FROM t_special_type WHERE
+		del_flag='0' and city_id = #{0} and order_flag = #{1} ORDER BY CODE)
+	</select>
+
+	<select id="getSearchVIPList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT vip_level AS CODE,name AS NAME FROM t_vip_info WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE+0
+	</select>
+	<select id="getEditVIPList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT vip_level AS CODE,name AS NAME FROM t_vip_info WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE+0
+	</select>
+
+	<select id="getSearchOrderRewardTypeList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE, NAME
+		FROM
+		(SELECT id AS CODE, type_name AS NAME FROM m_order_reward_type WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getEditOrderRewardTypeList" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE, NAME
+		FROM
+		(SELECT id AS CODE, type_name AS NAME FROM m_order_reward_type WHERE
+		del_flag='0' and city_id = #{strCityId,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getDictList" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT dict_id AS CODE,dict_name AS NAME
+		FROM m_dict
+		WHERE del_flag = '0'
+		and type_code = #{strDictType,jdbcType=VARCHAR}
+		ORDER BY CODE
+	</select>
+
+	<select id="getSearchUpperVip" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT dict_id AS CODE,dict_name AS NAME
+		FROM m_dict
+		WHERE del_flag = '0'
+		and type_code = 'userLevel'
+		and dict_id != '4500'
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getEditUpperVip" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT dict_id AS CODE,dict_name AS NAME
+		FROM m_dict
+		WHERE del_flag = '0'
+		and type_code = 'userLevel'
+		and dict_id != '4500'
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+
+
+	<select id="getSearchMenu" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT menu_id AS CODE,menu_name AS NAME
+		FROM m_menu
+		WHERE del_flag = '0'
+		and menu_level = '0'
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getEditMenu" resultType="com.burro.entity.common.ComboBox">
+		SELECT CODE,NAME
+		FROM
+		(SELECT menu_id AS CODE,menu_name AS NAME
+		FROM m_menu
+		WHERE del_flag = '0'
+		and menu_level = '0'
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getSearchMenuByPid" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT menu_id AS CODE,menu_name AS NAME FROM m_menu WHERE
+		del_flag='0' and menu_level = '1' and menu_pid =
+		#{strPid,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getEditMenuByPid" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT menu_id AS CODE,menu_name AS NAME FROM m_menu WHERE
+		del_flag='0' and menu_level = '1' and menu_pid =
+		#{strPid,jdbcType=VARCHAR}
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+
+	<select id="getSearchUserByCity" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT user_id AS CODE,user_name AS NAME
+		FROM m_user
+		WHERE user_role_id IN ('J000','J003','J004','J005','J006','J007')
+		and user_city_id = #{strCityId,jdbcType=VARCHAR}
+		and del_flag='0'
+		UNION ALL
+		SELECT '000' AS CODE,'所有' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+	<select id="getEditUserByCity" resultType="com.burro.entity.common.ComboBox"
+		parameterType="java.lang.String">
+		SELECT CODE,NAME
+		FROM
+		(SELECT user_id AS CODE,user_name AS NAME
+		FROM m_user
+		WHERE user_role_id IN ('J000','J003','J004','J005','J006','J007')
+		and user_city_id = #{strCityId,jdbcType=VARCHAR}
+		and del_flag='0'
+		UNION ALL
+		SELECT '000' AS CODE,'请选择' AS NAME FROM DUAL
+		) T1
+		ORDER BY CODE
+	</select>
+
+	<select id="getCheckDistrictJoin" resultType="java.lang.String"
+		parameterType="java.lang.String">
+		SELECT COUNT(*) FROM t_city_ascription a WHERE a.join_id =
+		#{strJoinId,jdbcType=VARCHAR} AND del_flag='0'
+	</select>
+	
+	<select id="getAllCityInfoList" resultType="com.burro.entity.common.ComboBox">
+		SELECT DISTINCT city_id AS CODE,city_name AS NAME FROM t_city WHERE del_flag='0' AND (city_level = '1' OR city_level = '6') 
+	</select>
+	
+	<select id="getAllOpenCityList" resultType="com.burro.entity.common.ComboBox">
+		SELECT DISTINCT city_id AS CODE,city_name AS NAME FROM t_city WHERE del_flag='0' AND (city_level = '1' OR city_level = '6') AND open_flag='1'
+	</select>
+
+	<select id="getAllDictList" resultType="com.burro.entity.common.ComboBox">
+		SELECT DISTINCT dict_id AS CODE,dict_name AS NAME FROM m_dict WHERE del_flag='0'
+	</select>
+	
+	
+</mapper>

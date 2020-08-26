@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.burro.dao.ICityDao" >
+
+	<sql id="Base_Column" >
+		a.id,
+		a.city_id,
+		a.city_name,
+		a.district_id,
+		a.parent_district_id,
+		a.open_flag,
+		CASE a.city_level
+			WHEN '0' THEN '省'
+			WHEN '1' THEN '市'
+			WHEN '2' THEN '区'
+			WHEN '6' THEN '直辖市'
+			ELSE a.city_level
+		END AS city_level,
+		a.remark
+	</sql>
+
+	<!-- 按Id修改区域信息 -->
+	<update id="update" parameterType="com.burro.entity.CityEntity" >
+		UPDATE t_city
+			<set >
+				<if test="openFlag != null" >
+					open_flag = #{openFlag,jdbcType=VARCHAR},
+				</if>
+				<if test="remark != null" >
+					remark = #{remark,jdbcType=VARCHAR},
+				</if>
+				update_by = #{updateBy,jdbcType=VARCHAR},
+				update_date = now()
+			</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+		AND del_flag='0'
+	</update>
+
+	<!-- 按cityId查询未删除区域 -->
+	<select id="getByCityId" parameterType="java.lang.String" resultType="com.burro.entity.CityEntity">
+		SELECT 
+			<include refid="Base_Column" />
+		FROM t_city a 
+		WHERE a.del_flag='0'
+		AND a.city_id = #{cityId,jdbcType=VARCHAR} 
+		AND a.city_level in (1,6)
+	</select>
+	
+	<!-- 按Id查询未删除区域 -->
+	<select id="getById" parameterType="java.lang.String" resultType="com.burro.entity.CityEntity">
+		SELECT 
+			<include refid="Base_Column" />
+		FROM t_city a 
+		WHERE a.del_flag='0'
+		AND a.id = #{id,jdbcType=VARCHAR} 
+	</select>
+	
+	<!-- 按user_id查询未删除区域 -->
+	<select id="getByUserId" parameterType="java.lang.String" resultType="com.burro.entity.CityEntity">
+		SELECT 
+			<include refid="Base_Column" />
+		FROM t_city a
+		WHERE a.del_flag='0'
+		AND a.city_id = (select city_id from t_user where user_id = #{userId,jdbcType=VARCHAR} AND del_flag='0') 
+		AND city_level in (1,6)
+	</select>
+	
+	<!-- 查询所有1.6级城市 -->
+	<select id="listLevel1And6" resultType="com.burro.entity.CityEntity">
+		SELECT 
+			<include refid="Base_Column" />
+		FROM t_city a 
+		WHERE a.del_flag='0'
+		AND a.city_level in (1,6)
+	</select>
+	
+	<!-- 按条件查询区域明细-->
+	<select id="list" parameterType="com.burro.entity.CityEntity" resultType="com.burro.entity.CityEntity">
+		SELECT 
+			a.id,
+			a.city_id,
+			a.city_name,
+			a.district_id,
+			a.parent_district_id,
+			CASE a.city_level
+				WHEN '0' THEN '省'
+				WHEN '1' THEN '市'
+				WHEN '2' THEN '区'
+				WHEN '6' THEN '直辖市'
+				ELSE a.city_level
+			END AS city_level,
+			CASE a.open_flag
+				WHEN '0' THEN '未开通'
+				WHEN '1' THEN '已开通'
+				ELSE a.open_flag
+			END AS open_flag,
+			a.remark,
+			IFNULL(u.user_name, a.update_by) AS update_by,
+			DATE_FORMAT(a.update_date,'%Y-%m-%d %H:%i:%S') AS update_date
+		FROM 
+			t_city a
+		LEFT JOIN m_user u ON a.update_by = u.user_id AND u.del_flag = '0'
+		WHERE a.del_flag='0'
+		<if test="parentDistrictId != '100000' and cityLevel == 2">
+			AND a.parent_district_id IN (
+				SELECT district_id FROM t_city WHERE parent_district_id = #{parentDistrictId,jdbcType=VARCHAR}
+			)
+		</if>
+		<if test="parentDistrictId != '100000' and cityLevel != 2 and cityLevel != '000'">
+			AND a.parent_district_id = #{parentDistrictId,jdbcType=VARCHAR}
+			AND a.city_level = #{cityLevel,jdbcType=VARCHAR}
+		</if>
+		<if test="parentDistrictId != '100000' and cityLevel == '000'">
+			AND a.parent_district_id = #{parentDistrictId,jdbcType=VARCHAR}
+		</if>
+		<if test="parentDistrictId == '100000' and cityLevel != '000'">
+			AND a.city_level = #{cityLevel,jdbcType=VARCHAR}
+		</if>
+		<if test="cityName != null and cityName != ''" >
+			AND a.city_name like CONCAT('%',#{cityName,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="cityId != null and cityId != ''" >
+			AND a.city_id like CONCAT('%',#{cityId,jdbcType=VARCHAR},'%' )
+		</if>	
+		<if test="districtId != null and districtId != ''" >
+			AND a.district_id like CONCAT('%',#{districtId,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="sort != null and sort != ''" >
+			ORDER BY ${sort} ${order} 
+		</if>
+		<if test="rows != -1">
+			LIMIT #{start},#{rows}
+		</if>
+	</select>
+  
+	<!-- 按条件查询区域数量 -->
+	<select id="count" resultType="long" parameterType="com.burro.entity.CityEntity" >
+		SELECT 
+			COUNT(1)
+		FROM t_city  a
+		WHERE a.del_flag='0'
+		<if test="parentDistrictId != '100000' and cityLevel == 2">
+			AND a.parent_district_id IN (
+				SELECT district_id FROM t_city WHERE parent_district_id = #{parentDistrictId,jdbcType=VARCHAR}
+			)
+		</if>
+		<if test="parentDistrictId != '100000' and cityLevel != 2 and cityLevel != '000'">
+			AND a.parent_district_id = #{parentDistrictId,jdbcType=VARCHAR}
+			AND a.city_level = #{cityLevel,jdbcType=VARCHAR}
+		</if>
+		<if test="parentDistrictId != '100000' and cityLevel == '000'">
+			AND a.parent_district_id = #{parentDistrictId,jdbcType=VARCHAR}
+		</if>
+		<if test="parentDistrictId == '100000' and cityLevel != '000'">
+			AND a.city_level = #{cityLevel,jdbcType=VARCHAR}
+		</if>
+		<if test="cityName != null and cityName != ''" >
+			AND a.city_name like CONCAT('%',#{cityName,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="cityId != null and cityId != ''" >
+			AND a.city_id = #{cityId,jdbcType=VARCHAR}
+		</if>	
+		<if test="districtId != null and districtId != ''" >
+			AND a.district_id like CONCAT('%',#{districtId,jdbcType=VARCHAR},'%' )
+		</if>
+	</select>
+	
+</mapper>

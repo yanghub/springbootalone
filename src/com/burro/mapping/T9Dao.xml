@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.burro.dao.IT9Dao" >
+	<!-- 通过id进行逻辑删除 -->
+	<delete id="deleteByIds">
+		UPDATE 
+			t_iii 
+		SET 
+			del_flag='1'
+		WHERE 
+			del_flag='0'
+		AND id IN
+		<foreach item="id" collection="ids" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+	<!-- 通过id进行物理删除 -->
+	<delete id="dropByIds">
+		DELETE  FROM
+			t_iii 
+		WHERE 
+			del_flag='0'
+		AND id IN
+		<foreach item="id" collection="ids" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<!-- 通过条件查询T9数据集合-->
+	<select id="list" resultType="com.burro.entity.Entity" parameterType="com.burro.entity.Entity" >
+		SELECT
+			id,
+			aaa, 
+			bbb, 
+			ccc, 
+			ddd, 
+			eee, 
+			fff, 
+			ggg, 
+			hhh, 
+			iii, 
+			jjj, 
+			kkk, 
+			lll, 
+			mmm, 
+			nnn, 
+			ooo, 
+			ppp, 
+			qqq, 
+			rrr, 
+			sss, 
+			ttt, 
+			uuu, 
+			vvv, 
+			www, 
+			xxx, 
+			yyy, 
+			zzz
+		FROM
+			t_iii
+		WHERE del_flag = '0'
+		<if test="aaa != null and aaa != ''" >
+			AND aaa = #{aaa,jdbcType=VARCHAR}
+		</if>
+		<if test="bbb != null and bbb != ''" >
+			AND bbb = #{bbb,jdbcType=VARCHAR}
+		</if>
+		<if test="ccc != null and ccc != ''" >
+			AND ccc = #{ccc,jdbcType=VARCHAR}
+		</if>
+		<if test="ddd != null and ddd != ''" >
+			AND ddd = #{ddd,jdbcType=VARCHAR}
+		</if>
+		<if test="eee != null and eee != ''" >
+			AND eee = #{eee,jdbcType=VARCHAR}
+		</if>
+		<if test="fff != null and fff != ''" >
+			AND fff = #{fff,jdbcType=VARCHAR}
+		</if>
+		<if test="ggg != null and ggg != ''" >
+			AND ggg = #{ggg,jdbcType=VARCHAR}
+		</if>
+		<if test="hhh != null and hhh != ''" >
+			AND hhh = #{hhh,jdbcType=VARCHAR}
+		</if>
+		<if test="iii != null and iii != ''" >
+			AND iii = #{iii,jdbcType=VARCHAR}
+		</if>
+		<if test="jjj != null and jjj != ''" >
+			AND jjj = #{jjj,jdbcType=VARCHAR}
+		</if>
+		<if test="kkk != null and kkk != ''" >
+			AND kkk = #{kkk,jdbcType=VARCHAR}
+		</if>
+		<if test="lll != null and lll != ''" >
+			AND lll = #{lll,jdbcType=VARCHAR}
+		</if>
+		<if test="mmm != null and mmm != ''" >
+			AND mmm = #{mmm,jdbcType=VARCHAR}
+		</if>
+		<if test="nnn != null and nnn != ''" >
+			AND nnn = #{nnn,jdbcType=VARCHAR}
+		</if>
+		<if test="ooo != null and ooo != ''" >
+			AND ooo = #{ooo,jdbcType=VARCHAR}
+		</if>
+		<if test="ppp != null and ppp != ''" >
+			AND ppp = #{ppp,jdbcType=VARCHAR}
+		</if>
+		<if test="qqq != null and qqq != ''" >
+			AND qqq = #{qqq,jdbcType=VARCHAR}
+		</if>
+		<if test="rrr != null and rrr != ''" >
+			AND rrr = #{rrr,jdbcType=VARCHAR}
+		</if>
+		<if test="sss != null and sss != ''" >
+			AND sss = #{sss,jdbcType=VARCHAR}
+		</if>
+		<if test="startTime != null and startTime != ''" >
+			AND ttt >= #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''" >
+			AND ttt >= ct.invalid_date
+		</if>	
+		<if test="uuu != null and uuu != ''" >
+			AND uuu like CONCAT('%',#{uuu,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="vvv != null and vvv != ''" >
+			AND vvv like CONCAT('%',#{vvv,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="www != null and www != ''" >
+			AND www like CONCAT('%',#{www,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="xxx != null and xxx != '000'" >
+			AND xxx = #{xxx,jdbcType=VARCHAR}
+		</if>
+		<if test="yyy != null and yyy != '000'" >
+			AND yyy = #{yyy,jdbcType=VARCHAR}
+		</if>
+		<if test="zzz != null and zzz != '000'" >
+			AND zzz = #{zzz,jdbcType=VARCHAR}
+		</if>
+		<if test="sort != null and sort != ''" >
+			order by ${sort} ${order} 
+		</if>
+		limit #{start},#{rows} 
+	</select>
+	
+	<!--通过条件查询T9数据数量-->
+	<select id="count" resultType="long" parameterType="com.burro.entity.Entity" >
+		SELECT count(*)
+		FROM t_iii 
+		WHERE del_flag = '0'
+		<if test="aaa != null and aaa != ''" >
+			AND aaa = #{aaa,jdbcType=VARCHAR}
+		</if>
+		<if test="bbb != null and bbb != ''" >
+			AND bbb = #{bbb,jdbcType=VARCHAR}
+		</if>
+		<if test="ccc != null and ccc != ''" >
+			AND ccc = #{ccc,jdbcType=VARCHAR}
+		</if>
+		<if test="ddd != null and ddd != ''" >
+			AND ddd = #{ddd,jdbcType=VARCHAR}
+		</if>
+		<if test="eee != null and eee != ''" >
+			AND eee = #{eee,jdbcType=VARCHAR}
+		</if>
+		<if test="fff != null and fff != ''" >
+			AND fff = #{fff,jdbcType=VARCHAR}
+		</if>
+		<if test="ggg != null and ggg != ''" >
+			AND ggg = #{ggg,jdbcType=VARCHAR}
+		</if>
+		<if test="hhh != null and hhh != ''" >
+			AND hhh = #{hhh,jdbcType=VARCHAR}
+		</if>
+		<if test="iii != null and iii != ''" >
+			AND iii = #{iii,jdbcType=VARCHAR}
+		</if>
+		<if test="jjj != null and jjj != ''" >
+			AND jjj = #{jjj,jdbcType=VARCHAR}
+		</if>
+		<if test="kkk != null and kkk != ''" >
+			AND kkk = #{kkk,jdbcType=VARCHAR}
+		</if>
+		<if test="lll != null and lll != ''" >
+			AND lll = #{lll,jdbcType=VARCHAR}
+		</if>
+		<if test="mmm != null and mmm != ''" >
+			AND mmm = #{mmm,jdbcType=VARCHAR}
+		</if>
+		<if test="nnn != null and nnn != ''" >
+			AND nnn = #{nnn,jdbcType=VARCHAR}
+		</if>
+		<if test="ooo != null and ooo != ''" >
+			AND ooo = #{ooo,jdbcType=VARCHAR}
+		</if>
+		<if test="ppp != null and ppp != ''" >
+			AND ppp = #{ppp,jdbcType=VARCHAR}
+		</if>
+		<if test="qqq != null and qqq != ''" >
+			AND qqq = #{qqq,jdbcType=VARCHAR}
+		</if>
+		<if test="rrr != null and rrr != ''" >
+			AND rrr = #{rrr,jdbcType=VARCHAR}
+		</if>
+		<if test="sss != null and sss != ''" >
+			AND sss = #{sss,jdbcType=VARCHAR}
+		</if>
+		<if test="startTime != null and startTime != ''" >
+			AND ttt >= #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''" >
+			AND ttt >= ct.invalid_date
+		</if>	
+		<if test="uuu != null and uuu != ''" >
+			AND uuu like CONCAT('%',#{uuu,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="vvv != null and vvv != ''" >
+			AND vvv like CONCAT('%',#{vvv,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="www != null and www != ''" >
+			AND www like CONCAT('%',#{www,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="xxx != null and xxx != '000'" >
+			AND xxx = #{xxx,jdbcType=VARCHAR}
+		</if>
+		<if test="yyy != null and yyy != '000'" >
+			AND yyy = #{yyy,jdbcType=VARCHAR}
+		</if>
+		<if test="zzz != null and zzz != '000'" >
+			AND zzz = #{zzz,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<!--通过id查询T9-->
+	<select id ="getById" parameterType="string" resultType="com.burro.entity.Entity">
+		SELECT
+			id,
+			aaa, 
+			bbb, 
+			ccc, 
+			ddd, 
+			eee, 
+			fff, 
+			ggg, 
+			hhh, 
+			iii, 
+			jjj, 
+			kkk, 
+			lll, 
+			mmm, 
+			nnn, 
+			ooo, 
+			ppp, 
+			qqq, 
+			rrr, 
+			sss, 
+			ttt, 
+			uuu, 
+			vvv, 
+			www, 
+			xxx, 
+			yyy, 
+			zzz
+		FROM t_iii 
+		WHERE del_flag = '0'
+		AND id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	
+	<!--新增T9-->
+	<insert id ="insert" parameterType="com.burro.entity.Entity">
+		INSERT INTO t_iii (
+			id,
+			del_flag,
+			aaa, 
+			bbb, 
+			ccc, 
+			ddd, 
+			eee, 
+			fff, 
+			ggg, 
+			hhh, 
+			iii, 
+			jjj, 
+			kkk, 
+			lll, 
+			mmm, 
+			nnn, 
+			ooo, 
+			ppp, 
+			qqq, 
+			rrr, 
+			sss, 
+			ttt, 
+			uuu, 
+			vvv, 
+			www, 
+			xxx, 
+			yyy, 
+			zzz
+		)VALUES(
+			REPLACE(UUID(),'-',''),
+			'0',
+			#{aaa,jdbcType=VARCHAR},
+			#{bbb,jdbcType=VARCHAR},
+			#{ccc,jdbcType=VARCHAR},
+			#{ddd,jdbcType=VARCHAR},
+			#{eee,jdbcType=VARCHAR},
+			#{fff,jdbcType=VARCHAR},
+			#{ggg,jdbcType=VARCHAR},
+			#{hhh,jdbcType=VARCHAR},
+			#{iii,jdbcType=VARCHAR},
+			#{jjj,jdbcType=VARCHAR},
+			#{kkk,jdbcType=VARCHAR},
+			#{lll,jdbcType=VARCHAR},
+			#{mmm,jdbcType=VARCHAR},
+			#{nnn,jdbcType=VARCHAR},
+			#{ooo,jdbcType=VARCHAR},
+			#{ppp,jdbcType=VARCHAR},
+			#{qqq,jdbcType=VARCHAR},
+			#{rrr,jdbcType=VARCHAR},
+			#{sss,jdbcType=VARCHAR},
+			#{ttt,jdbcType=VARCHAR},
+			#{uuu,jdbcType=VARCHAR},
+			#{vvv,jdbcType=VARCHAR},
+			#{www,jdbcType=VARCHAR},
+			#{xxx,jdbcType=VARCHAR},
+			#{yyy,jdbcType=VARCHAR},
+			#{zzz,jdbcType=VARCHAR}
+		)
+	
+	</insert>
+
+	<!-- 修改T9-->
+	<update id="update" parameterType="com.burro.entity.Entity">
+		UPDATE t_iii 
+		<set> 
+			<if test="aaa != null and aaa != ''" >
+				aaa = #{aaa,jdbcType=VARCHAR},
+			</if>
+			<if test="bbb != null and bbb != ''" >
+				bbb = #{bbb,jdbcType=VARCHAR},
+			</if>
+			<if test="ccc != null and ccc != ''" >
+				ccc = #{ccc,jdbcType=VARCHAR},
+			</if>
+			<if test="ddd != null and ddd != ''" >
+				ddd = #{ddd,jdbcType=VARCHAR},
+			</if>
+			<if test="eee != null and eee != ''" >
+				eee = #{eee,jdbcType=VARCHAR},
+			</if>
+			<if test="fff != null and fff != ''" >
+				fff = #{fff,jdbcType=VARCHAR},
+			</if>
+			<if test="ggg != null and ggg != ''" >
+				ggg = #{ggg,jdbcType=VARCHAR},
+			</if>
+			<if test="hhh != null and hhh != ''" >
+				hhh = #{hhh,jdbcType=VARCHAR},
+			</if>
+			<if test="iii != null and iii != ''" >
+				iii = #{iii,jdbcType=VARCHAR},
+			</if>
+			<if test="jjj != null and jjj != ''" >
+				jjj = #{jjj,jdbcType=VARCHAR},
+			</if>
+			<if test="kkk != null and kkk != ''" >
+				kkk = #{kkk,jdbcType=VARCHAR},
+			</if>
+			<if test="lll != null and lll != ''" >
+				lll = #{lll,jdbcType=VARCHAR},
+			</if>
+			<if test="mmm != null and mmm != ''" >
+				mmm = #{mmm,jdbcType=VARCHAR},
+			</if>
+			<if test="nnn != null and nnn != ''" >
+				nnn = #{nnn,jdbcType=VARCHAR},
+			</if>
+			<if test="ooo != null and ooo != ''" >
+				ooo = #{ooo,jdbcType=VARCHAR},
+			</if>
+			<if test="ppp != null and ppp != ''" >
+				ppp = #{ppp,jdbcType=VARCHAR},
+			</if>
+			<if test="qqq != null and qqq != ''" >
+				qqq = #{qqq,jdbcType=VARCHAR},
+			</if>
+			<if test="rrr != null and rrr != ''" >
+				rrr = #{rrr,jdbcType=VARCHAR},
+			</if>
+			<if test="sss != null and sss != ''" >
+				sss = #{sss,jdbcType=VARCHAR},
+			</if>
+			<if test="ttt != null and ttt != ''" >
+				ttt = #{ttt,jdbcType=VARCHAR},
+			</if>
+			<if test="uuu != null and uuu != ''" >
+				uuu = #{uuu,jdbcType=VARCHAR},
+			</if>
+			<if test="vvv != null and vvv != ''" >
+				vvv = #{vvv,jdbcType=VARCHAR},
+			</if>
+			<if test="www != null and www != ''" >
+				www = #{www,jdbcType=VARCHAR},
+			</if>
+			<if test="xxx != null and xxx != '000'" >
+				xxx = #{xxx,jdbcType=VARCHAR},
+			</if>
+			<if test="yyy != null and yyy != '000'" >
+				yyy = #{yyy,jdbcType=VARCHAR},
+			</if>
+			<if test="zzz != null and zzz != '000'" >
+				zzz = #{zzz,jdbcType=VARCHAR},
+			</if>
+			del_flag='0'
+		</set>
+		WHERE id=#{id,jdbcType=VARCHAR}
+		AND del_flag='0'
+	</update>
+</mapper>

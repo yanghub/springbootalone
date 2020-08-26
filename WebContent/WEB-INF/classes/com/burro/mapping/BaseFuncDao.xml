@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.burro.dao.IBaseFuncDao" >
+	
+	<!-- 用于列表页面查询 -->
+	<sql id="Base_Column_List" >
+		m.id, 
+		m.func_id, 
+		m.func_name, 
+		m.remark, 
+		IFNULL((select mu.user_id from m_user mu where m.create_by = mu.user_id and mu.del_flag = '0'),m.create_by) as createBy,
+		DATE_FORMAT(m.create_date,'%Y-%m-%d %H:%i:%S') AS create_date,
+		IFNULL((select mu.user_id from m_user mu where m.update_by = mu.user_id and mu.del_flag = '0'),m.update_by) as updateBy,
+		DATE_FORMAT(m.update_date,'%Y-%m-%d %H:%i:%S') AS update_date
+	</sql>
+	
+	<!-- 用于编辑页面查询 -->
+	<sql id="Base_Column_Edit" >
+		id,
+		func_id, 
+		func_name, 
+		remark, 
+		create_by, 
+		create_date, 
+		update_by, 
+		update_date
+	</sql>
+	
+	<!--通过id获取功能信息	-->
+	<select id="getById" resultType="com.burro.entity.BaseFuncEntity" parameterType="java.lang.String" >
+		SELECT 
+			<include refid="Base_Column_Edit" />
+		FROM m_base_func
+			WHERE del_flag = '0' 
+			AND id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 查询基本功能信息条数-->
+	<select id="count" resultType="long" parameterType="com.burro.entity.BaseFuncEntity" >
+		SELECT 
+			count(*)
+		FROM 
+			m_base_func
+		WHERE 
+				del_flag='0'
+		<if test="funcId != null and funcId != ''" >
+			AND func_id like CONCAT('%',#{funcId,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="funcName != null and funcName != ''" >
+			AND func_name like CONCAT('%',#{funcName,jdbcType=VARCHAR},'%' )
+		</if>	 
+	</select>
+	
+	<!-- 查询基本功能信息明细-->
+	<select id="list" resultType="com.burro.entity.BaseFuncEntity" parameterType="com.burro.entity.BaseFuncEntity" >
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM 
+			m_base_func m
+		WHERE 
+			m.del_flag='0'
+		<if test="funcId != null and funcId != ''" >
+				AND m.func_id like CONCAT('%',#{funcId,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="funcName != null and funcName != ''" >
+				AND m.func_name like CONCAT('%',#{funcName,jdbcType=VARCHAR},'%' )
+		</if>	
+		ORDER BY func_id
+		LIMIT #{start},#{rows}
+	</select>
+	
+	<!--通过id删除功能信息-->
+	<delete id="delete" parameterType="java.lang.String" >
+		UPDATE m_base_func
+			SET del_flag = '1',
+			update_by = #{updateBy,jdbcType=VARCHAR},
+			update_date = now()
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<!--通过id批量删除  -->
+	<delete id="deleteByIds">
+		UPDATE m_base_func
+		SET del_flag='1',
+			update_date=now(),
+			update_by=#{updateBy} 
+		WHERE del_flag = '0' 
+		AND id IN
+		<foreach item="id" collection="ids" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<!--新增功能信息	-->
+	<insert id="insert" parameterType="com.burro.entity.BaseFuncEntity" >
+		INSERT INTO m_base_func (
+			id,
+			func_id, 
+			func_name, 
+			func_type,
+			create_by, 
+			create_date,
+			update_by, 
+			update_date, 
+			del_flag
+		) VALUES (
+			REPLACE(UUID(),'-',''),
+			#{funcId,jdbcType=VARCHAR}, 
+			#{funcName,jdbcType=VARCHAR},	 
+			'1',	 
+			#{createBy,jdbcType=VARCHAR}, 
+			now(), 
+			#{updateBy,jdbcType=VARCHAR}, 
+			now(), 
+			'0'
+		)
+	</insert>
+	
+	<!--更新功能信息	-->
+	<update id="update" parameterType="com.burro.entity.BaseFuncEntity" >
+		UPDATE m_base_func
+		<set >
+			<if test="funcId != null" >
+			func_id = #{funcId,jdbcType=VARCHAR},
+			</if>
+			<if test="funcName != null" >
+			func_name = #{funcName,jdbcType=VARCHAR},
+			</if>	 
+			<if test="updateBy != null" >
+			update_by = #{updateBy,jdbcType=VARCHAR},
+			</if>
+			update_date = now()
+		</set>
+		WHERE del_flag = '0' 
+		AND id = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>
